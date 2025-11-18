@@ -14,6 +14,7 @@
         <link href="css/styles.css" rel="stylesheet" />
     </head>
     <body>
+        <!-- Nav Bar -->
         <?php include "includes/navbar.php"; ?>
         
         <!-- Product section-->
