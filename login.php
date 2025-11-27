@@ -1,3 +1,40 @@
+<?php
+session_start();
+require_once "includes/db.php";
+
+$errores = [];
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $correo = trim($_POST['correo'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if ($correo === "" || $password === "") {
+        $errores[] = "Debes ingresar correo y contraseña.";
+    } else {
+        $stmt = $conexion->prepare("SELECT id_usuario, nombre, contraseña FROM usuarios WHERE correo = ?");
+        $stmt->bind_param("s", $correo);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+
+        if ($fila = $resultado->fetch_assoc()) {
+            if (password_verify($password, $fila['contraseña'])) {
+                // Login correcto
+                $_SESSION['id_usuario'] = $fila['id_usuario'];
+                $_SESSION['nombre'] = $fila['nombre'];
+
+                // Mantener sesión abierta hasta que el usuario cierre sesión
+                header("Location: index.php");
+                exit;
+            } else {
+                $errores[] = "Contraseña incorrecta.";
+            }
+        } else {
+            $errores[] = "No existe una cuenta con ese correo.";
+        }
+        $stmt->close();
+    }
+}
+?>
 <!doctype html>
 <html lang="es">
 <head>
@@ -12,7 +49,31 @@
 
 <div class="container px-4 px-lg-5 mt-4">
     <h1>Iniciar sesión</h1>
-    <p>Aquí irá el formulario de login más adelante.</p>
+
+    <?php if (!empty($errores)): ?>
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                <?php foreach ($errores as $e): ?>
+                    <li><?php echo htmlspecialchars($e); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
+    <form method="post" class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Correo electrónico</label>
+            <input type="email" name="correo" class="form-control"
+                   value="<?php echo htmlspecialchars($correo ?? ''); ?>" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Contraseña</label>
+            <input type="password" name="password" class="form-control" required>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Entrar</button>
+        </div>
+    </form>
 </div>
 
 <script src="js/scripts.js"></script>
