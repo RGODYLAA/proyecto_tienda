@@ -130,9 +130,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <button type="submit" class="btn btn-primary">Crear cuenta</button>
         </div>
     </form>
+
+    <hr class="my-4">
+    
+    <div class="text-center">
+        <p class="mb-0">¿Ya tienes cuenta? <a href="login.php" class="fw-bold text-decoration-none">Inicia sesión aquí</a></p>
+    </div>
 </div>
 
 <script src="js/scripts.js"></script>
 </body>
 </html>
-

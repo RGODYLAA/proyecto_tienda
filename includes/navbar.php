@@ -7,14 +7,26 @@ require_once "db.php";
 
 // Contar productos en carrito
 $total_carrito = 0;
+$es_admin = false;
+
 if (!empty($_SESSION['id_usuario'])) {
     $id_usuario = $_SESSION['id_usuario'];
+    
+    // Contar carrito
     $sql = "SELECT SUM(cantidad) AS total FROM carrito WHERE id_usuario = ?";
     $stmt = $conexion->prepare($sql);
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $res = $stmt->get_result()->fetch_assoc();
     $total_carrito = (int)($res['total'] ?? 0);
+    
+    // Verificar si es admin
+    $sql_admin = "SELECT es_admin FROM usuarios WHERE id_usuario = ?";
+    $stmt_admin = $conexion->prepare($sql_admin);
+    $stmt_admin->bind_param("i", $id_usuario);
+    $stmt_admin->execute();
+    $res_admin = $stmt_admin->get_result()->fetch_assoc();
+    $es_admin = ($res_admin && $res_admin['es_admin'] == 1);
 }
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -41,6 +53,9 @@ if (!empty($_SESSION['id_usuario'])) {
         <?php if (!empty($_SESSION['id_usuario'])): ?>
             <li class="nav-item"><a class="nav-link" href="historial.php">Historial</a></li>
             <li class="nav-item"><a class="nav-link" href="usuario.php">Mi cuenta</a></li>
+            <?php if ($es_admin): ?>
+                <li class="nav-item"><a class="nav-link text-warning" href="admin.php"><i class="bi bi-gear-fill"></i> Admin</a></li>
+            <?php endif; ?>
             <li class="nav-item">
               <span class="nav-link disabled">
                 Hola, <?php echo htmlspecialchars($_SESSION['nombre']); ?>
